@@ -9,7 +9,12 @@ int main()
     InitWindow(windowWidth, windowHeight, "Kami Dash");
     SetTargetFPS(60);
 
-    // Gravity
+    // Set Character
+    Texture2D kami = LoadTexture("textures/running_knight_girl.png");
+    Rectangle kamiRectangle;
+    Vector2 kamiPosition;
+
+    // Gravity Properties
     const int gravity = 1;
     const int jumpVelocity = -20;
 
@@ -27,27 +32,27 @@ int main()
         
         DrawCircle(windowWidth/2, positionY, radius, GREEN);
 
-        // Ground check
+        // Ground Check
         if (positionY >= windowHeight - radius)
         {
-            // Player is on the ground
+            // Player is on the Ground
             velocity = 0;
             inTheAir = false;
         }
         else
         {
-            // Player is in the air, apply gravity
+            // Player is in the Air, apply Gravity
             velocity += gravity;
             inTheAir = true;
         }
 
-        // Player jumps at velocity
+        // Player Jumps at Velocity
         if(IsKeyPressed(KEY_SPACE) && !inTheAir)
         {
             velocity += jumpVelocity;
         }
         
-        // Update position
+        // Update Position
         positionY += velocity;
 
         EndDrawing();
