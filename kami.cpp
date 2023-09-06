@@ -14,13 +14,17 @@ int main()
     Rectangle kamiRectangle;
     Vector2 kamiPosition;
 
+    kamiRectangle.width = kami.width/7;
+    kamiRectangle.height = kami.height;
+    kamiRectangle.x = 0;
+    kamiRectangle.y = 0;
+
+    kamiPosition.x = windowWidth/2 - kamiRectangle.width/2;
+    kamiPosition.y = windowHeight - kamiRectangle.height;
+
     // Gravity Properties
     const int gravity = 1;
     const int jumpVelocity = -20;
-
-    // Placeholder Circle Properties
-    const int radius = 20;
-    int positionY = windowHeight - radius;
     int velocity = 0;
     int inTheAir = false;
 
@@ -30,10 +34,10 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE);
         
-        DrawCircle(windowWidth/2, positionY, radius, GREEN);
+        DrawTextureRec(kami, kamiRectangle, kamiPosition, WHITE);
 
         // Ground Check
-        if (positionY >= windowHeight - radius)
+        if (kamiPosition.y >= windowHeight - kamiRectangle.height)
         {
             // Player is on the Ground
             velocity = 0;
@@ -53,10 +57,11 @@ int main()
         }
         
         // Update Position
-        positionY += velocity;
+        kamiPosition.y += velocity;
 
         EndDrawing();
     }
 
+    UnloadTexture(kami);
     CloseWindow();
 }
