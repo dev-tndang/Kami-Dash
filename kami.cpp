@@ -9,7 +9,7 @@ int main()
     InitWindow(windowWidth, windowHeight, "Kami Dash");
     SetTargetFPS(60);
 
-    // Set Character
+    // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     Rectangle kamiRectangle;
     Vector2 kamiPosition;
@@ -22,6 +22,14 @@ int main()
     kamiPosition.x = windowWidth/2 - kamiRectangle.width/2;
     kamiPosition.y = windowHeight - kamiRectangle.height;
 
+    // Set PowerUp
+    Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
+
+    // Kami's Running Animation
+    const float updateTime = 1.0/12.0;
+    float runningTime = 0;
+    int kamiRunningFrame = 0;
+
     // Gravity Properties (pixels/s)
     const int gravity = 1600;
     const int jumpVelocity = -800;
@@ -33,6 +41,7 @@ int main()
     {
         // Delta Time
         const float deltaTime = GetFrameTime();
+        runningTime += deltaTime;
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -63,9 +72,22 @@ int main()
         // Update Position
         kamiPosition.y += velocity * deltaTime;
 
+        // Update Animation Frame
+        if (runningTime >= updateTime)
+        {
+            kamiRectangle.x = kamiRunningFrame * kamiRectangle.width;
+            kamiRunningFrame++;
+            if (kamiRunningFrame > 6)
+            {
+                kamiRunningFrame = 0;
+            }
+            runningTime = 0;
+        }
+
         EndDrawing();
     }
 
     UnloadTexture(kami);
+    UnloadTexture(powerCrystal);
     CloseWindow();
 }
