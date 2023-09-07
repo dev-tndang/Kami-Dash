@@ -40,8 +40,11 @@ int main()
     float runningTime = 0;
     int kamiRunningFrame = 0;
 
-    // Power Crystal Movement
-    int powerCrystalVelocity = -600;
+    // Power Crystal's Animation
+    const float powerCrystalUpdateTime = 1.0/4.0;
+    float powerCrystalRunningTime = 0;
+    int powerCrystalFrame = 0;
+    int powerCrystalVelocity = -200;
 
     // Gravity Properties (pixels/s)
     const int gravity = 1600;
@@ -54,7 +57,10 @@ int main()
     {
         // Delta Time
         const float deltaTime = GetFrameTime();
+
+        // Update Running Times with Delta Time
         runningTime += deltaTime;
+        powerCrystalRunningTime += deltaTime;
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -73,7 +79,7 @@ int main()
             kamiPosition.y = windowHeight - kamiRectangle.height;
             inTheAir = false;
 
-            // Update Animation Frame
+            // Update Kami's Animation Frame
             if (runningTime >= updateTime)
             {
                 kamiRectangle.x = kamiRunningFrame * kamiRectangle.width;
@@ -103,6 +109,18 @@ int main()
 
         // Update Power Crystal's Position
         powerCrystalPosition.x += powerCrystalVelocity * deltaTime;
+
+        // Update Power Crystal's Animation
+        if (powerCrystalRunningTime >= powerCrystalUpdateTime)
+        {
+            powerCrystalRectangle.x = powerCrystalFrame * powerCrystalRectangle.width;
+            powerCrystalFrame++;
+            if (powerCrystalFrame > 3)
+            {
+                powerCrystalFrame = 0;
+            }
+            powerCrystalRunningTime = 0;
+        } 
 
         EndDrawing();
     }
