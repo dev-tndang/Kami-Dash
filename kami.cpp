@@ -26,14 +26,24 @@ int main()
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
     Rectangle powerCrystalRectangle;
     Vector2 powerCrystalPosition;
+    Rectangle powerCrystal2Rectangle;
+    Vector2 powerCrystal2Position;
 
     powerCrystalRectangle.width = powerCrystal.width/4;
     powerCrystalRectangle.height = powerCrystal.height;
     powerCrystalRectangle.x = 0;
     powerCrystalRectangle.y = 0;
 
+    powerCrystal2Rectangle.width = powerCrystal.width/4;
+    powerCrystal2Rectangle.height = powerCrystal.height;
+    powerCrystal2Rectangle.x = 0;
+    powerCrystal2Rectangle.y = 0;
+
     powerCrystalPosition.x = windowWidth;
     powerCrystalPosition.y = windowHeight - powerCrystalRectangle.height;
+
+    powerCrystal2Position.x = windowWidth + 300;
+    powerCrystal2Position.y = windowHeight - powerCrystalRectangle.height;
 
     // Kami's Running Animation
     const float updateTime = 1.0/12.0;
@@ -44,6 +54,11 @@ int main()
     const float powerCrystalUpdateTime = 1.0/4.0;
     float powerCrystalRunningTime = 0;
     int powerCrystalFrame = 0;
+
+    const float powerCrystal2UpdateTime = 1.0/6.0;
+    float powerCrystal2RunningTime = 0;
+    int powerCrystal2Frame = 0;
+
     int powerCrystalVelocity = -200;
 
     // Gravity Properties (pixels/s)
@@ -61,6 +76,7 @@ int main()
         // Update Running Times with Delta Time
         runningTime += deltaTime;
         powerCrystalRunningTime += deltaTime;
+        powerCrystal2RunningTime += deltaTime;
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -70,6 +86,9 @@ int main()
 
         // Render Power Crystal
         DrawTextureRec(powerCrystal, powerCrystalRectangle, powerCrystalPosition, WHITE);
+
+        // Render Power Crystal 2
+        DrawTextureRec(powerCrystal, powerCrystal2Rectangle, powerCrystal2Position, WHITE);
 
         // Ground Check
         if (kamiPosition.y >= windowHeight - kamiRectangle.height)
@@ -109,6 +128,7 @@ int main()
 
         // Update Power Crystal's Position
         powerCrystalPosition.x += powerCrystalVelocity * deltaTime;
+        powerCrystal2Position.x += powerCrystalVelocity * deltaTime;
 
         // Update Power Crystal's Animation
         if (powerCrystalRunningTime >= powerCrystalUpdateTime)
@@ -120,6 +140,17 @@ int main()
                 powerCrystalFrame = 0;
             }
             powerCrystalRunningTime = 0;
+        } 
+
+        if (powerCrystal2RunningTime >= powerCrystal2UpdateTime)
+        {
+            powerCrystal2Rectangle.x = powerCrystal2Frame * powerCrystal2Rectangle.width;
+            powerCrystal2Frame++;
+            if (powerCrystal2Frame > 3)
+            {
+                powerCrystal2Frame = 0;
+            }
+            powerCrystal2RunningTime = 0;
         } 
 
         EndDrawing();
