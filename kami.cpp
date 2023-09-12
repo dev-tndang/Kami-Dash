@@ -60,6 +60,7 @@ int main()
     powerCrystal2Data.frame = 0;
 
     int powerCrystalVelocity = -200;
+    AnimationData powerCrystals[2] {powerCrystal1Data, powerCrystal2Data};
 
     // Gravity Properties (pixels/s)
     const int gravity = 1600;
@@ -75,8 +76,8 @@ int main()
 
         // Update Running Times with Delta Time
         kamiData.runningTime += deltaTime;
-        powerCrystal1Data.runningTime += deltaTime;
-        powerCrystal2Data.runningTime += deltaTime;
+        powerCrystals[0].runningTime += deltaTime;
+        powerCrystals[1].runningTime += deltaTime;
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -85,8 +86,8 @@ int main()
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
 
         // Render Power Crystal 1 & 2
-        DrawTextureRec(powerCrystal, powerCrystal1Data.rectangle, powerCrystal1Data.position, WHITE);
-        DrawTextureRec(powerCrystal, powerCrystal2Data.rectangle, powerCrystal2Data.position, WHITE);
+        DrawTextureRec(powerCrystal, powerCrystals[0].rectangle, powerCrystals[0].position, WHITE);
+        DrawTextureRec(powerCrystal, powerCrystals[1].rectangle, powerCrystals[1].position, WHITE);
 
         // Ground Check
         if (kamiData.position.y >= windowDimensions[1] - kamiData.rectangle.height)
@@ -125,30 +126,30 @@ int main()
         kamiData.position.y += velocity * deltaTime;
 
         // Update Power Crystals Position
-        powerCrystal1Data.position.x += powerCrystalVelocity * deltaTime;
-        powerCrystal2Data.position.x += powerCrystalVelocity * deltaTime;
+        powerCrystals[0].position.x += powerCrystalVelocity * deltaTime;
+        powerCrystals[1].position.x += powerCrystalVelocity * deltaTime;
 
         // Update Power Crystals Animation
-        if (powerCrystal1Data.runningTime >= powerCrystal1Data.updateTime)
+        if (powerCrystals[0].runningTime >= powerCrystals[0].updateTime)
         {
-            powerCrystal1Data.rectangle.x = powerCrystal1Data.frame * powerCrystal1Data.rectangle.width;
-            powerCrystal1Data.frame++;
-            if (powerCrystal1Data.frame > 3)
+            powerCrystals[0].rectangle.x = powerCrystals[0].frame * powerCrystals[0].rectangle.width;
+            powerCrystals[0].frame++;
+            if (powerCrystals[0].frame > 3)
             {
-                powerCrystal1Data.frame = 0;
+                powerCrystals[0].frame = 0;
             }
-            powerCrystal1Data.runningTime = 0;
+            powerCrystals[0].runningTime = 0;
         } 
 
-        if (powerCrystal2Data.runningTime >= powerCrystal2Data.updateTime)
+        if (powerCrystals[1].runningTime >= powerCrystals[1].updateTime)
         {
-            powerCrystal2Data.rectangle.x = powerCrystal2Data.frame * powerCrystal2Data.rectangle.width;
-            powerCrystal2Data.frame++;
-            if (powerCrystal2Data.frame > 3)
+            powerCrystals[1].rectangle.x = powerCrystals[1].frame * powerCrystals[1].rectangle.width;
+            powerCrystals[1].frame++;
+            if (powerCrystals[1].frame > 3)
             {
-                powerCrystal2Data.frame = 0;
+                powerCrystals[1].frame = 0;
             }
-            powerCrystal2Data.runningTime = 0;
+            powerCrystals[1].runningTime = 0;
         } 
 
         EndDrawing();
