@@ -13,10 +13,11 @@ struct AnimationData
 int main()
 {
     // Window Properties
-    const int windowWidth = 1280;
-    const int windowHeight = 720;
+    int windowDimensions[2];
+    windowDimensions[0] = 1280;
+    windowDimensions[1] = 720;
 
-    InitWindow(windowWidth, windowHeight, "Kami Dash");
+    InitWindow(windowDimensions[0], windowDimensions[1], "Kami Dash");
     SetTargetFPS(60);
 
     // Set Character "Kami"
@@ -27,8 +28,8 @@ int main()
     kamiData.rectangle.height = kami.height;
     kamiData.rectangle.x = 0.0;
     kamiData.rectangle.y = 0.0;
-    kamiData.position.x = windowWidth/2 - kamiData.rectangle.width/2;
-    kamiData.position.y = windowHeight - kamiData.rectangle.height;
+    kamiData.position.x = windowDimensions[0]/2 - kamiData.rectangle.width/2;
+    kamiData.position.y = windowDimensions[1] - kamiData.rectangle.height;
     kamiData.updateTime = 1.0/12.0;
     kamiData.runningTime = 0;
     kamiData.frame = 0;
@@ -42,8 +43,8 @@ int main()
     powerCrystal1Data.rectangle.height = powerCrystal.height;
     powerCrystal1Data.rectangle.x = 0;
     powerCrystal1Data.rectangle.y = 0;
-    powerCrystal1Data.position.x = windowWidth;
-    powerCrystal1Data.position.y = windowHeight - powerCrystal1Data.rectangle.height;
+    powerCrystal1Data.position.x = windowDimensions[0];
+    powerCrystal1Data.position.y = windowDimensions[1] - powerCrystal1Data.rectangle.height;
     powerCrystal1Data.updateTime = 1.0/4.0;
     powerCrystal1Data.runningTime = 0;
     powerCrystal1Data.frame = 0;
@@ -52,8 +53,8 @@ int main()
     powerCrystal2Data.rectangle.height = powerCrystal.height;
     powerCrystal2Data.rectangle.x = 0;
     powerCrystal2Data.rectangle.y = 0;
-    powerCrystal2Data.position.x = windowWidth + 300;
-    powerCrystal2Data.position.y = windowHeight - powerCrystal2Data.rectangle.height;
+    powerCrystal2Data.position.x = windowDimensions[0] + 300;
+    powerCrystal2Data.position.y = windowDimensions[1] - powerCrystal2Data.rectangle.height;
     powerCrystal2Data.updateTime = 1.0/6.0;
     powerCrystal2Data.runningTime = 0;
     powerCrystal2Data.frame = 0;
@@ -88,11 +89,11 @@ int main()
         DrawTextureRec(powerCrystal, powerCrystal2Data.rectangle, powerCrystal2Data.position, WHITE);
 
         // Ground Check
-        if (kamiData.position.y >= windowHeight - kamiData.rectangle.height)
+        if (kamiData.position.y >= windowDimensions[1] - kamiData.rectangle.height)
         {
             // Player is on the Ground
             velocity = 0;
-            kamiData.position.y = windowHeight - kamiData.rectangle.height;
+            kamiData.position.y = windowDimensions[1] - kamiData.rectangle.height;
             inTheAir = false;
 
             // Update Kami's Animation Frame
