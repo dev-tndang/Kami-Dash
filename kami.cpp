@@ -1,5 +1,15 @@
 #include "raylib.h"
 
+struct AnimationData
+{
+    Rectangle rectangle;
+    Vector2 position;
+    int frame;
+    float updateTime;
+    float runningTime;
+};
+
+
 int main()
 {
     // Window Properties
@@ -11,53 +21,42 @@ int main()
 
     // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
-    Rectangle kamiRectangle;
-    Vector2 kamiPosition;
+    AnimationData kamiData;
 
-    kamiRectangle.width = kami.width/7;
-    kamiRectangle.height = kami.height;
-    kamiRectangle.x = 0;
-    kamiRectangle.y = 0;
-
-    kamiPosition.x = windowWidth/2 - kamiRectangle.width/2;
-    kamiPosition.y = windowHeight - kamiRectangle.height;
+    kamiData.rectangle.width = kami.width/7;
+    kamiData.rectangle.height = kami.height;
+    kamiData.rectangle.x = 0.0;
+    kamiData.rectangle.y = 0.0;
+    kamiData.position.x = windowWidth/2 - kamiData.rectangle.width/2;
+    kamiData.position.y = windowHeight - kamiData.rectangle.height;
+    kamiData.updateTime = 1.0/12.0;
+    kamiData.runningTime = 0;
+    kamiData.frame = 0;
 
     // Set PowerUp
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
-    Rectangle powerCrystalRectangle;
-    Vector2 powerCrystalPosition;
-    Rectangle powerCrystal2Rectangle;
-    Vector2 powerCrystal2Position;
+    AnimationData powerCrystal1Data;
+    AnimationData powerCrystal2Data;
 
-    powerCrystalRectangle.width = powerCrystal.width/4;
-    powerCrystalRectangle.height = powerCrystal.height;
-    powerCrystalRectangle.x = 0;
-    powerCrystalRectangle.y = 0;
+    powerCrystal1Data.rectangle.width = powerCrystal.width/4;
+    powerCrystal1Data.rectangle.height = powerCrystal.height;
+    powerCrystal1Data.rectangle.x = 0;
+    powerCrystal1Data.rectangle.y = 0;
+    powerCrystal1Data.position.x = windowWidth;
+    powerCrystal1Data.position.y = windowHeight - powerCrystal1Data.rectangle.height;
+    powerCrystal1Data.updateTime = 1.0/4.0;
+    powerCrystal1Data.runningTime = 0;
+    powerCrystal1Data.frame = 0;
 
-    powerCrystal2Rectangle.width = powerCrystal.width/4;
-    powerCrystal2Rectangle.height = powerCrystal.height;
-    powerCrystal2Rectangle.x = 0;
-    powerCrystal2Rectangle.y = 0;
-
-    powerCrystalPosition.x = windowWidth;
-    powerCrystalPosition.y = windowHeight - powerCrystalRectangle.height;
-
-    powerCrystal2Position.x = windowWidth + 300;
-    powerCrystal2Position.y = windowHeight - powerCrystalRectangle.height;
-
-    // Kami's Running Animation
-    const float updateTime = 1.0/12.0;
-    float runningTime = 0;
-    int kamiRunningFrame = 0;
-
-    // Power Crystal's Animation
-    const float powerCrystalUpdateTime = 1.0/4.0;
-    float powerCrystalRunningTime = 0;
-    int powerCrystalFrame = 0;
-
-    const float powerCrystal2UpdateTime = 1.0/6.0;
-    float powerCrystal2RunningTime = 0;
-    int powerCrystal2Frame = 0;
+    powerCrystal2Data.rectangle.width = powerCrystal.width/4;
+    powerCrystal2Data.rectangle.height = powerCrystal.height;
+    powerCrystal2Data.rectangle.x = 0;
+    powerCrystal2Data.rectangle.y = 0;
+    powerCrystal2Data.position.x = windowWidth + 300;
+    powerCrystal2Data.position.y = windowHeight - powerCrystal2Data.rectangle.height;
+    powerCrystal2Data.updateTime = 1.0/6.0;
+    powerCrystal2Data.runningTime = 0;
+    powerCrystal2Data.frame = 0;
 
     int powerCrystalVelocity = -200;
 
@@ -74,40 +73,38 @@ int main()
         const float deltaTime = GetFrameTime();
 
         // Update Running Times with Delta Time
-        runningTime += deltaTime;
-        powerCrystalRunningTime += deltaTime;
-        powerCrystal2RunningTime += deltaTime;
+        kamiData.runningTime += deltaTime;
+        powerCrystal1Data.runningTime += deltaTime;
+        powerCrystal2Data.runningTime += deltaTime;
 
         BeginDrawing();
         ClearBackground(WHITE);
         
         // Render Kami
-        DrawTextureRec(kami, kamiRectangle, kamiPosition, WHITE);
+        DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
 
-        // Render Power Crystal
-        DrawTextureRec(powerCrystal, powerCrystalRectangle, powerCrystalPosition, WHITE);
-
-        // Render Power Crystal 2
-        DrawTextureRec(powerCrystal, powerCrystal2Rectangle, powerCrystal2Position, WHITE);
+        // Render Power Crystal 1 & 2
+        DrawTextureRec(powerCrystal, powerCrystal1Data.rectangle, powerCrystal1Data.position, WHITE);
+        DrawTextureRec(powerCrystal, powerCrystal2Data.rectangle, powerCrystal2Data.position, WHITE);
 
         // Ground Check
-        if (kamiPosition.y >= windowHeight - kamiRectangle.height)
+        if (kamiData.position.y >= windowHeight - kamiData.rectangle.height)
         {
             // Player is on the Ground
             velocity = 0;
-            kamiPosition.y = windowHeight - kamiRectangle.height;
+            kamiData.position.y = windowHeight - kamiData.rectangle.height;
             inTheAir = false;
 
             // Update Kami's Animation Frame
-            if (runningTime >= updateTime)
+            if (kamiData.runningTime >= kamiData.updateTime)
             {
-                kamiRectangle.x = kamiRunningFrame * kamiRectangle.width;
-                kamiRunningFrame++;
-                if (kamiRunningFrame > 6)
+                kamiData.rectangle.x = kamiData.frame * kamiData.rectangle.width;
+                kamiData.frame++;
+                if (kamiData.frame > 6)
                 {
-                    kamiRunningFrame = 0;
+                    kamiData.frame = 0;
                 }
-                runningTime = 0;
+                kamiData.runningTime = 0;
             }
         }
         else
@@ -124,33 +121,33 @@ int main()
         }
         
         // Update Kami's Position
-        kamiPosition.y += velocity * deltaTime;
+        kamiData.position.y += velocity * deltaTime;
 
-        // Update Power Crystal's Position
-        powerCrystalPosition.x += powerCrystalVelocity * deltaTime;
-        powerCrystal2Position.x += powerCrystalVelocity * deltaTime;
+        // Update Power Crystals Position
+        powerCrystal1Data.position.x += powerCrystalVelocity * deltaTime;
+        powerCrystal2Data.position.x += powerCrystalVelocity * deltaTime;
 
-        // Update Power Crystal's Animation
-        if (powerCrystalRunningTime >= powerCrystalUpdateTime)
+        // Update Power Crystals Animation
+        if (powerCrystal1Data.runningTime >= powerCrystal1Data.updateTime)
         {
-            powerCrystalRectangle.x = powerCrystalFrame * powerCrystalRectangle.width;
-            powerCrystalFrame++;
-            if (powerCrystalFrame > 3)
+            powerCrystal1Data.rectangle.x = powerCrystal1Data.frame * powerCrystal1Data.rectangle.width;
+            powerCrystal1Data.frame++;
+            if (powerCrystal1Data.frame > 3)
             {
-                powerCrystalFrame = 0;
+                powerCrystal1Data.frame = 0;
             }
-            powerCrystalRunningTime = 0;
+            powerCrystal1Data.runningTime = 0;
         } 
 
-        if (powerCrystal2RunningTime >= powerCrystal2UpdateTime)
+        if (powerCrystal2Data.runningTime >= powerCrystal2Data.updateTime)
         {
-            powerCrystal2Rectangle.x = powerCrystal2Frame * powerCrystal2Rectangle.width;
-            powerCrystal2Frame++;
-            if (powerCrystal2Frame > 3)
+            powerCrystal2Data.rectangle.x = powerCrystal2Data.frame * powerCrystal2Data.rectangle.width;
+            powerCrystal2Data.frame++;
+            if (powerCrystal2Data.frame > 3)
             {
-                powerCrystal2Frame = 0;
+                powerCrystal2Data.frame = 0;
             }
-            powerCrystal2RunningTime = 0;
+            powerCrystal2Data.runningTime = 0;
         } 
 
         EndDrawing();
