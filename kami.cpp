@@ -9,6 +9,10 @@ struct AnimationData
     float runningTime;
 };
 
+bool isOnGround(AnimationData data, int windowHeight)
+{
+    return data.position.y >= windowHeight - data.rectangle.height;
+}
 
 int main()
 {
@@ -78,7 +82,7 @@ int main()
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
 
         // Ground Check
-        if (kamiData.position.y >= windowDimensions[1] - kamiData.rectangle.height)
+        if (isOnGround(kamiData, windowDimensions[1]))
         {
             // Player is on the Ground
             velocity = 0;
