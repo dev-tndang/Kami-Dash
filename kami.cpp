@@ -14,6 +14,24 @@ bool isOnGround(AnimationData data, int windowHeight)
     return data.position.y >= windowHeight - data.rectangle.height;
 }
 
+AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
+{
+    // Update Running Time
+    data.runningTime += deltaTime;
+    if (data.runningTime >= data.updateTime)
+    {
+        // Update Animation Frame
+        data.rectangle.x = data.frame * data.rectangle.width;
+        data.frame++;
+        if (data.frame > maxFrame)
+        {
+            data.frame = 0;
+        }
+        data.runningTime = 0;
+    }
+    return data;
+}
+
 int main()
 {
     // Window Properties
@@ -71,10 +89,6 @@ int main()
         // Delta Time
         const float deltaTime = GetFrameTime();
 
-        // Update Running Times with Delta Time
-        kamiData.runningTime += deltaTime;
-        powerCrystals[1].runningTime += deltaTime;
-
         BeginDrawing();
         ClearBackground(WHITE);
         
@@ -90,16 +104,7 @@ int main()
             inTheAir = false;
 
             // Update Kami's Animation Frame
-            if (kamiData.runningTime >= kamiData.updateTime)
-            {
-                kamiData.rectangle.x = kamiData.frame * kamiData.rectangle.width;
-                kamiData.frame++;
-                if (kamiData.frame > 6)
-                {
-                    kamiData.frame = 0;
-                }
-                kamiData.runningTime = 0;
-            }
+            kamiData = updateAnimationData(kamiData, deltaTime, 6);
         }
         else
         {
@@ -117,24 +122,17 @@ int main()
         // Update Kami's Position
         kamiData.position.y += velocity * deltaTime;
 
-        // Render & Update Power Crystals
+        // Render & Update Power Crystal's Values
         for (int i = 0; i < amountOfCrystals; i++)
         {
+            // Render the Power Crystals
             DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
 
+            // Update the Power Crystals Position
             powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
-            powerCrystals[i].runningTime += deltaTime;
 
-            if (powerCrystals[i].runningTime >= powerCrystals[i].updateTime)
-            {
-                powerCrystals[i].rectangle.x = powerCrystals[i].frame * powerCrystals[i].rectangle.width;
-                powerCrystals[i].frame++;
-                if (powerCrystals[i].frame > 3)
-                {
-                    powerCrystals[i].frame = 0;
-                }
-                powerCrystals[i].runningTime = 0;
-            }
+            // Update the Power Crystals Animation
+            powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
         }
 
         EndDrawing();
