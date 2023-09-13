@@ -36,31 +36,25 @@ int main()
 
     // Set PowerUp
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
-    AnimationData powerCrystal1Data;
-    AnimationData powerCrystal2Data;
+    AnimationData powerCrystals[3]{};
 
-    powerCrystal1Data.rectangle.width = powerCrystal.width/4;
-    powerCrystal1Data.rectangle.height = powerCrystal.height;
-    powerCrystal1Data.rectangle.x = 0;
-    powerCrystal1Data.rectangle.y = 0;
-    powerCrystal1Data.position.x = windowDimensions[0];
-    powerCrystal1Data.position.y = windowDimensions[1] - powerCrystal1Data.rectangle.height;
-    powerCrystal1Data.updateTime = 1.0/4.0;
-    powerCrystal1Data.runningTime = 0;
-    powerCrystal1Data.frame = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        powerCrystals[i].rectangle.x = 0.0;
+        powerCrystals[i].rectangle.y = 0.0;
+        powerCrystals[i].rectangle.width = powerCrystal.width/4;
+        powerCrystals[i].rectangle.height = powerCrystal.height;
+        powerCrystals[i].position.y = windowDimensions[1] - powerCrystal.height;
+        powerCrystals[i].frame = 0;
+        powerCrystals[i].runningTime = 0.0;
+        powerCrystals[i].updateTime = 1.0/4.0;
+    }
 
-    powerCrystal2Data.rectangle.width = powerCrystal.width/4;
-    powerCrystal2Data.rectangle.height = powerCrystal.height;
-    powerCrystal2Data.rectangle.x = 0;
-    powerCrystal2Data.rectangle.y = 0;
-    powerCrystal2Data.position.x = windowDimensions[0] + 300;
-    powerCrystal2Data.position.y = windowDimensions[1] - powerCrystal2Data.rectangle.height;
-    powerCrystal2Data.updateTime = 1.0/6.0;
-    powerCrystal2Data.runningTime = 0;
-    powerCrystal2Data.frame = 0;
-
+    powerCrystals[0].position.x = windowDimensions[0];
+    powerCrystals[1].position.x = windowDimensions[0] + 300;
+    powerCrystals[2].position.x = windowDimensions[0] + 600;
+    
     int powerCrystalVelocity = -200;
-    AnimationData powerCrystals[2] {powerCrystal1Data, powerCrystal2Data};
 
     // Gravity Properties (pixels/s)
     const int gravity = 1600;
