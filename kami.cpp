@@ -36,23 +36,22 @@ int main()
 
     // Set PowerUp
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
-    AnimationData powerCrystals[3]{};
 
-    for (int i = 0; i < 3; i++)
+    const int amountOfCrystals = 6;
+    AnimationData powerCrystals[amountOfCrystals]{};
+
+    for (int i = 0; i < amountOfCrystals; i++)
     {
         powerCrystals[i].rectangle.x = 0.0;
         powerCrystals[i].rectangle.y = 0.0;
         powerCrystals[i].rectangle.width = powerCrystal.width/4;
         powerCrystals[i].rectangle.height = powerCrystal.height;
+        powerCrystals[i].position.x = windowDimensions[0] + (i * 300);
         powerCrystals[i].position.y = windowDimensions[1] - powerCrystal.height;
         powerCrystals[i].frame = 0;
         powerCrystals[i].runningTime = 0.0;
         powerCrystals[i].updateTime = 1.0/4.0;
     }
-
-    powerCrystals[0].position.x = windowDimensions[0];
-    powerCrystals[1].position.x = windowDimensions[0] + 300;
-    powerCrystals[2].position.x = windowDimensions[0] + 600;
     
     int powerCrystalVelocity = -200;
 
@@ -70,7 +69,6 @@ int main()
 
         // Update Running Times with Delta Time
         kamiData.runningTime += deltaTime;
-        powerCrystals[0].runningTime += deltaTime;
         powerCrystals[1].runningTime += deltaTime;
 
         BeginDrawing();
@@ -78,10 +76,6 @@ int main()
         
         // Render Kami
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
-
-        // Render Power Crystal 1 & 2
-        DrawTextureRec(powerCrystal, powerCrystals[0].rectangle, powerCrystals[0].position, WHITE);
-        DrawTextureRec(powerCrystal, powerCrystals[1].rectangle, powerCrystals[1].position, WHITE);
 
         // Ground Check
         if (kamiData.position.y >= windowDimensions[1] - kamiData.rectangle.height)
@@ -119,32 +113,25 @@ int main()
         // Update Kami's Position
         kamiData.position.y += velocity * deltaTime;
 
-        // Update Power Crystals Position
-        powerCrystals[0].position.x += powerCrystalVelocity * deltaTime;
-        powerCrystals[1].position.x += powerCrystalVelocity * deltaTime;
-
-        // Update Power Crystals Animation
-        if (powerCrystals[0].runningTime >= powerCrystals[0].updateTime)
+        // Render & Update Power Crystals
+        for (int i = 0; i < amountOfCrystals; i++)
         {
-            powerCrystals[0].rectangle.x = powerCrystals[0].frame * powerCrystals[0].rectangle.width;
-            powerCrystals[0].frame++;
-            if (powerCrystals[0].frame > 3)
-            {
-                powerCrystals[0].frame = 0;
-            }
-            powerCrystals[0].runningTime = 0;
-        } 
+            DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
 
-        if (powerCrystals[1].runningTime >= powerCrystals[1].updateTime)
-        {
-            powerCrystals[1].rectangle.x = powerCrystals[1].frame * powerCrystals[1].rectangle.width;
-            powerCrystals[1].frame++;
-            if (powerCrystals[1].frame > 3)
+            powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
+            powerCrystals[i].runningTime += deltaTime;
+
+            if (powerCrystals[i].runningTime >= powerCrystals[i].updateTime)
             {
-                powerCrystals[1].frame = 0;
+                powerCrystals[i].rectangle.x = powerCrystals[i].frame * powerCrystals[i].rectangle.width;
+                powerCrystals[i].frame++;
+                if (powerCrystals[i].frame > 3)
+                {
+                    powerCrystals[i].frame = 0;
+                }
+                powerCrystals[i].runningTime = 0;
             }
-            powerCrystals[1].runningTime = 0;
-        } 
+        }
 
         EndDrawing();
     }
