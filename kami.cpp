@@ -42,6 +42,14 @@ int main()
     InitWindow(windowDimensions[0], windowDimensions[1], "Kami Dash");
     SetTargetFPS(60);
 
+    // Set Level Background
+    Texture2D levelBackground = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
+    Vector2 backgroundPosition;
+    float backgroundX = 0.0;
+
+    backgroundPosition.x = 0.0;
+    backgroundPosition.y = 0.0;
+
     // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     AnimationData kamiData;
@@ -56,7 +64,7 @@ int main()
     kamiData.runningTime = 0;
     kamiData.frame = 0;
 
-    // Set PowerUp
+    // Set PowerUp Crystals
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
 
     const int amountOfCrystals = 6;
@@ -89,8 +97,15 @@ int main()
         // Delta Time
         const float deltaTime = GetFrameTime();
 
+        // Update Background Position
+        backgroundX -= 20 * deltaTime;
+        backgroundPosition.x = backgroundX;
+
         BeginDrawing();
         ClearBackground(WHITE);
+
+        // Render the Background
+        DrawTextureEx(levelBackground, backgroundPosition, 0.0, 1.5, WHITE);
         
         // Render Kami
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
@@ -140,5 +155,6 @@ int main()
 
     UnloadTexture(kami);
     UnloadTexture(powerCrystal);
+    UnloadTexture(levelBackground);
     CloseWindow();
 }
