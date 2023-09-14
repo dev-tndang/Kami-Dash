@@ -44,11 +44,15 @@ int main()
 
     // Set Level Background
     Texture2D levelBackground = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
-    Vector2 backgroundPosition;
+    Vector2 background1Position;
+    Vector2 background2Position;
+    const float backgroundScale = 1.5;
     float backgroundX = 0.0;
 
-    backgroundPosition.x = 0.0;
-    backgroundPosition.y = 0.0;
+    background1Position.x = 0.0;
+    background1Position.y = 0.0;
+    background2Position.x = 0.0;
+    background2Position.y = 0.0;
 
     // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
@@ -99,13 +103,22 @@ int main()
 
         // Update Background Position
         backgroundX -= 20 * deltaTime;
-        backgroundPosition.x = backgroundX;
+
+        if (backgroundX <= -levelBackground.width * backgroundScale)
+        {
+            backgroundX = 0.0;
+        }
+        
+
+        background1Position.x = backgroundX;
+        background2Position.x = backgroundX + levelBackground.width * backgroundScale;
 
         BeginDrawing();
         ClearBackground(WHITE);
 
         // Render the Background
-        DrawTextureEx(levelBackground, backgroundPosition, 0.0, 1.5, WHITE);
+        DrawTextureEx(levelBackground, background1Position, 0.0, backgroundScale, WHITE);
+        DrawTextureEx(levelBackground, background2Position, 0.0, backgroundScale, WHITE);
         
         // Render Kami
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
