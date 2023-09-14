@@ -7,6 +7,7 @@ struct AnimationData
     int frame;
     float updateTime;
     float runningTime;
+    float positionYOffset;
 };
 
 struct BackgroundData
@@ -20,15 +21,15 @@ struct BackgroundData
 };
 
 
-bool isOnGround(AnimationData data, int windowHeight)
+bool isOnGround(AnimationData data, int windowHeight, float positionOffset)
 {
-    return data.position.y >= windowHeight - data.rectangle.height;
+    return data.position.y >= windowHeight - (data.rectangle.height + positionOffset);
 }
 
-float setBackgroundLayerSpeed(float location, float deltaTime, int layerLocation)
+float setBackgroundLayerSpeed(float scrollingXLocation, float scrollingSpeed, float deltaTime, int layerLocation)
 {
-    location -= (10 * layerLocation) * deltaTime;
-    return location;
+    scrollingXLocation -= (scrollingSpeed * layerLocation) * deltaTime;
+    return scrollingXLocation;
 }
 
 AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
@@ -73,23 +74,29 @@ int main()
     SetTargetFPS(60);
 
     // Set Level Background
-    const int amountOfTextures = 7;
+    const int amountOfTextures = 12;
+    float backgroundScollingSpeed = 10.0;
     BackgroundData levelData[amountOfTextures]{};
 
     levelData[0].texture = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
-    levelData[1].texture = LoadTexture("textures/dark_pixel_forest/Layer_0007_Lights.png");
-    levelData[2].texture = LoadTexture("textures/dark_pixel_forest/Layer_0003_6.png");
-    levelData[3].texture = LoadTexture("textures/dark_pixel_forest/Layer_0004_Lights.png");
-    levelData[4].texture = LoadTexture("textures/dark_pixel_forest/Layer_0002_7.png");
-    levelData[5].texture = LoadTexture("textures/dark_pixel_forest/Layer_0001_8.png");
-    levelData[6].texture = LoadTexture("textures/dark_pixel_forest/Layer_0000_9.png");
+    levelData[1].texture = LoadTexture("textures/dark_pixel_forest/Layer_0010_1.png");
+    levelData[2].texture = LoadTexture("textures/dark_pixel_forest/Layer_0009_2.png");
+    levelData[3].texture = LoadTexture("textures/dark_pixel_forest/Layer_0008_3.png");
+    levelData[4].texture = LoadTexture("textures/dark_pixel_forest/Layer_0007_Lights.png");
+    levelData[5].texture = LoadTexture("textures/dark_pixel_forest/Layer_0006_4.png");
+    levelData[6].texture = LoadTexture("textures/dark_pixel_forest/Layer_0005_5.png");
+    levelData[7].texture = LoadTexture("textures/dark_pixel_forest/Layer_0004_Lights.png");
+    levelData[8].texture = LoadTexture("textures/dark_pixel_forest/Layer_0003_6.png");
+    levelData[9].texture = LoadTexture("textures/dark_pixel_forest/Layer_0002_7.png");
+    levelData[10].texture = LoadTexture("textures/dark_pixel_forest/Layer_0001_8.png");
+    levelData[11].texture = LoadTexture("textures/dark_pixel_forest/Layer_0000_9.png");
 
     for (int i = 0; i < amountOfTextures; i++)
     {
         levelData[i].position.x = 0.0;
-        levelData[i].position.y = -levelData[i].texture.height / 2;
+        levelData[i].position.y = -levelData[i].texture.height / 2 - 60.0;
         levelData[i].followingPosition.x = levelData[i].position.x + levelData[i].texture.width;
-        levelData[i].followingPosition.y = -levelData[i].texture.height / 2;
+        levelData[i].followingPosition.y = -levelData[i].texture.height / 2 - 60.0;
         levelData[i].rectangle.x = 0.0;
         levelData[i].rectangle.y = 0.0;
         levelData[i].rectangle.height = levelData[i].texture.height;
@@ -106,11 +113,12 @@ int main()
     kamiData.rectangle.height = kami.height;
     kamiData.rectangle.x = 0.0;
     kamiData.rectangle.y = 0.0;
-    kamiData.position.x = windowDimensions[0]/2 - kamiData.rectangle.width/2;
-    kamiData.position.y = windowDimensions[1] - kamiData.rectangle.height;
+    kamiData.position.x = windowDimensions[0]/2 - kami.width/1.5;
+    kamiData.position.y = windowDimensions[1] + kami.height;
     kamiData.updateTime = 1.0/12.0;
     kamiData.runningTime = 0;
     kamiData.frame = 0;
+    kamiData.positionYOffset = 70.0;
 
     // Set PowerUp Crystals
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
@@ -124,13 +132,14 @@ int main()
         powerCrystals[i].rectangle.y = 0.0;
         powerCrystals[i].rectangle.width = powerCrystal.width/4;
         powerCrystals[i].rectangle.height = powerCrystal.height;
+        powerCrystals[i].positionYOffset = 75.0;
         powerCrystals[i].position.x = windowDimensions[0] + (i * 300);
-        powerCrystals[i].position.y = windowDimensions[1] - powerCrystal.height;
+        powerCrystals[i].position.y = windowDimensions[1] - (powerCrystal.height + powerCrystals[i].positionYOffset);
         powerCrystals[i].frame = 0;
         powerCrystals[i].runningTime = 0.0;
         powerCrystals[i].updateTime = 1.0/4.0;
     }
-    
+
     int powerCrystalVelocity = -200;
 
     // Gravity Properties (pixels/s)
@@ -156,7 +165,7 @@ int main()
             DrawTextureEx(levelData[i].texture, levelData[i].followingPosition, 0.0, levelData[i].scale, WHITE);
 
             // Update the Background Texture Positions
-            levelData[i].xLocation = setBackgroundLayerSpeed(levelData[i].xLocation, deltaTime, i);
+            levelData[i].xLocation = setBackgroundLayerSpeed(levelData[i].xLocation, backgroundScollingSpeed, deltaTime, i);
 
             // Update Background Positions
             levelData[i] = updateLevelData(levelData[i], deltaTime);
@@ -166,11 +175,11 @@ int main()
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
 
         // Ground Check
-        if (isOnGround(kamiData, windowDimensions[1]))
+        if (isOnGround(kamiData, windowDimensions[1], kamiData.positionYOffset))
         {
             // Player is on the Ground
             velocity = 0;
-            kamiData.position.y = windowDimensions[1] - kamiData.rectangle.height;
+            kamiData.position.y = windowDimensions[1] - (kamiData.rectangle.height + kamiData.positionYOffset);
             inTheAir = false;
 
             // Update Kami's Animation Frame
