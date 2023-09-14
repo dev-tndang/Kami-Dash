@@ -74,9 +74,9 @@ int main()
     SetTargetFPS(60);
 
     // Set Level Background
-    const int amountOfTextures = 12;
+    const int amountOfBGTextures = 10;
     float backgroundScollingSpeed = 10.0;
-    BackgroundData levelData[amountOfTextures]{};
+    BackgroundData levelData[amountOfBGTextures]{};
 
     levelData[0].texture = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
     levelData[1].texture = LoadTexture("textures/dark_pixel_forest/Layer_0010_1.png");
@@ -87,11 +87,9 @@ int main()
     levelData[6].texture = LoadTexture("textures/dark_pixel_forest/Layer_0005_5.png");
     levelData[7].texture = LoadTexture("textures/dark_pixel_forest/Layer_0004_Lights.png");
     levelData[8].texture = LoadTexture("textures/dark_pixel_forest/Layer_0003_6.png");
-    levelData[9].texture = LoadTexture("textures/dark_pixel_forest/Layer_0002_7.png");
-    levelData[10].texture = LoadTexture("textures/dark_pixel_forest/Layer_0001_8.png");
-    levelData[11].texture = LoadTexture("textures/dark_pixel_forest/Layer_0000_9.png");
+    levelData[9].texture = LoadTexture("textures/dark_pixel_forest/Layer_0001_8.png");
 
-    for (int i = 0; i < amountOfTextures; i++)
+    for (int i = 0; i < amountOfBGTextures; i++)
     {
         levelData[i].position.x = 0.0;
         levelData[i].position.y = -levelData[i].texture.height / 2 - 60.0;
@@ -103,6 +101,28 @@ int main()
         levelData[i].rectangle.width = levelData[i].texture.width;
         levelData[i].scale = 1.5;
         levelData[i].xLocation = 0.0;
+    }
+
+    // Set Level Foreground
+    const int amountOfFGTextures = 2;
+    float foregroundScrollingSpeed = 100.0;
+    BackgroundData foregroundData[amountOfFGTextures]{};
+
+    foregroundData[0].texture = LoadTexture("textures/dark_pixel_forest/Layer_0002_7.png");
+    foregroundData[1].texture = LoadTexture("textures/dark_pixel_forest/Layer_0000_9.png");
+    
+    for (int i = 0; i < amountOfFGTextures; i++)
+    {
+        foregroundData[i].position.x = 0.0;
+        foregroundData[i].position.y = -foregroundData[i].texture.height / 2 - 60.0;
+        foregroundData[i].followingPosition.x = foregroundData[i].position.x + foregroundData[i].texture.width;
+        foregroundData[i].followingPosition.y = -foregroundData[i].texture.height / 2 - 60.0;
+        foregroundData[i].rectangle.x = 0.0;
+        foregroundData[i].rectangle.y = 0.0;
+        foregroundData[i].rectangle.height = foregroundData[i].texture.height;
+        foregroundData[i].rectangle.width = foregroundData[i].texture.width;
+        foregroundData[i].scale = 1.5;
+        foregroundData[i].xLocation = 0.0;
     }
 
     // Set Character "Kami"
@@ -158,7 +178,7 @@ int main()
         ClearBackground(WHITE);
         
         // Update Background Data
-        for (int i = 0; i < amountOfTextures; i++)
+        for (int i = 0; i < amountOfBGTextures; i++)
         {
             // Render the Background
             DrawTextureEx(levelData[i].texture, levelData[i].position, 0.0, levelData[i].scale, WHITE);
@@ -214,14 +234,32 @@ int main()
             powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
         }
 
+                // Update Foreground Data
+        for (int i = 0; i < amountOfFGTextures; i++)
+        {
+            // Render the Background
+            DrawTextureEx(foregroundData[i].texture, foregroundData[i].position, 0.0, foregroundData[i].scale, WHITE);
+            DrawTextureEx(foregroundData[i].texture, foregroundData[i].followingPosition, 0.0, foregroundData[i].scale, WHITE);
+
+            // Update the Background Texture Positions
+            foregroundData[i].xLocation = setBackgroundLayerSpeed(foregroundData[i].xLocation, foregroundScrollingSpeed, deltaTime, i);
+
+            // Update Background Positions
+            foregroundData[i] = updateLevelData(foregroundData[i], deltaTime);
+        }
+
         EndDrawing();
     }
 
     UnloadTexture(kami);
     UnloadTexture(powerCrystal);
-    for (int i = 0; i < amountOfTextures; i++)
+    for (int i = 0; i < amountOfBGTextures; i++)
     {
         UnloadTexture(levelData[i].texture);
+    }  
+    for (int i = 0; i < amountOfBGTextures; i++)
+    {
+        UnloadTexture(foregroundData[i].texture);
     }  
     CloseWindow();
 }
