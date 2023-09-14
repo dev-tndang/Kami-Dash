@@ -9,9 +9,26 @@ struct AnimationData
     float runningTime;
 };
 
+struct BackgroundData
+{
+    Texture2D texture;
+    Vector2 position;
+    Vector2 followingPosition;
+    Rectangle rectangle;
+    float scale;
+    float xLocation;
+};
+
+
 bool isOnGround(AnimationData data, int windowHeight)
 {
     return data.position.y >= windowHeight - data.rectangle.height;
+}
+
+float setBackgroundLayerSpeed(float location, float deltaTime, int layerLocation)
+{
+    location -= (10 * layerLocation) * deltaTime;
+    return location;
 }
 
 AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
@@ -32,6 +49,19 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
     return data;
 }
 
+BackgroundData updateLevelData(BackgroundData data, float deltaTime)
+{
+    // Reset Background Texture Positions
+    if (data.xLocation <= -data.rectangle.width * data.scale)
+    {
+        data.xLocation = 0.0;
+    }
+
+    data.position.x = data.xLocation;
+    data.followingPosition.x = data.xLocation + data.texture.width * data.scale;
+    return data;
+}
+
 int main()
 {
     // Window Properties
@@ -43,16 +73,30 @@ int main()
     SetTargetFPS(60);
 
     // Set Level Background
-    Texture2D levelBackground = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
-    Vector2 background1Position;
-    Vector2 background2Position;
-    const float backgroundScale = 1.5;
-    float backgroundX = 0.0;
+    const int amountOfTextures = 7;
+    BackgroundData levelData[amountOfTextures]{};
 
-    background1Position.x = 0.0;
-    background1Position.y = 0.0;
-    background2Position.x = 0.0;
-    background2Position.y = 0.0;
+    levelData[0].texture = LoadTexture("textures/dark_pixel_forest/Layer_0011_0.png");
+    levelData[1].texture = LoadTexture("textures/dark_pixel_forest/Layer_0007_Lights.png");
+    levelData[2].texture = LoadTexture("textures/dark_pixel_forest/Layer_0003_6.png");
+    levelData[3].texture = LoadTexture("textures/dark_pixel_forest/Layer_0004_Lights.png");
+    levelData[4].texture = LoadTexture("textures/dark_pixel_forest/Layer_0002_7.png");
+    levelData[5].texture = LoadTexture("textures/dark_pixel_forest/Layer_0001_8.png");
+    levelData[6].texture = LoadTexture("textures/dark_pixel_forest/Layer_0000_9.png");
+
+    for (int i = 0; i < amountOfTextures; i++)
+    {
+        levelData[i].position.x = 0.0;
+        levelData[i].position.y = -levelData[i].texture.height / 2;
+        levelData[i].followingPosition.x = levelData[i].position.x + levelData[i].texture.width;
+        levelData[i].followingPosition.y = -levelData[i].texture.height / 2;
+        levelData[i].rectangle.x = 0.0;
+        levelData[i].rectangle.y = 0.0;
+        levelData[i].rectangle.height = levelData[i].texture.height;
+        levelData[i].rectangle.width = levelData[i].texture.width;
+        levelData[i].scale = 1.5;
+        levelData[i].xLocation = 0.0;
+    }
 
     // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
@@ -101,25 +145,23 @@ int main()
         // Delta Time
         const float deltaTime = GetFrameTime();
 
-        // Update Background Position
-        backgroundX -= 20 * deltaTime;
-
-        if (backgroundX <= -levelBackground.width * backgroundScale)
-        {
-            backgroundX = 0.0;
-        }
-        
-
-        background1Position.x = backgroundX;
-        background2Position.x = backgroundX + levelBackground.width * backgroundScale;
-
         BeginDrawing();
         ClearBackground(WHITE);
-
-        // Render the Background
-        DrawTextureEx(levelBackground, background1Position, 0.0, backgroundScale, WHITE);
-        DrawTextureEx(levelBackground, background2Position, 0.0, backgroundScale, WHITE);
         
+        // Update Background Data
+        for (int i = 0; i < amountOfTextures; i++)
+        {
+            // Render the Background
+            DrawTextureEx(levelData[i].texture, levelData[i].position, 0.0, levelData[i].scale, WHITE);
+            DrawTextureEx(levelData[i].texture, levelData[i].followingPosition, 0.0, levelData[i].scale, WHITE);
+
+            // Update the Background Texture Positions
+            levelData[i].xLocation = setBackgroundLayerSpeed(levelData[i].xLocation, deltaTime, i);
+
+            // Update Background Positions
+            levelData[i] = updateLevelData(levelData[i], deltaTime);
+        }
+
         // Render Kami
         DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
 
@@ -168,6 +210,9 @@ int main()
 
     UnloadTexture(kami);
     UnloadTexture(powerCrystal);
-    UnloadTexture(levelBackground);
+    for (int i = 0; i < amountOfTextures; i++)
+    {
+        UnloadTexture(levelData[i].texture);
+    }  
     CloseWindow();
 }
