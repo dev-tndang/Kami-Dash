@@ -70,6 +70,8 @@ int main()
     windowDimensions[0] = 1280;
     windowDimensions[1] = 720;
 
+    bool collision = false;
+
     InitWindow(windowDimensions[0], windowDimensions[1], "Kami Dash");
     SetTargetFPS(60);
 
@@ -139,7 +141,7 @@ int main()
     kamiData.runningTime = 0;
     kamiData.frame = 0;
     kamiData.positionYOffset = 70.0;
-
+ 
     // Set PowerUp Crystals
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
 
@@ -191,8 +193,57 @@ int main()
             levelData[i] = updateLevelData(levelData[i], deltaTime);
         }
 
-        // Render Kami
-        DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
+        for (AnimationData crystal : powerCrystals)
+        {
+            float padding = 20.0;
+            Rectangle crystalRectangle
+            {
+                crystal.position.x + padding,
+                crystal.position.y + padding,
+                crystal.rectangle.width - 2 * padding,
+                crystal.rectangle.height - 2 * padding
+            };
+            Rectangle kamiRectangle
+            {
+                kamiData.position.x,
+                kamiData.position.y,
+                kamiData.rectangle.width,
+                kamiData.rectangle.height
+            };
+            if (CheckCollisionRecs(crystalRectangle, kamiRectangle))
+            {
+                collision = true;
+            }
+            
+        }
+
+        // Game Status depending on Player's Collision Status
+        if (collision)
+        {
+            // Game Over
+        }
+        else
+        {
+            // Render Kami
+            DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
+            
+            // Update Kami's Position
+            kamiData.position.y += velocity * deltaTime;
+
+            // Render & Update Power Crystal's Values
+            for (int i = 0; i < amountOfCrystals; i++)
+            {
+                // Render the Power Crystals
+                DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
+
+                // Update the Power Crystals Position
+                powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
+
+                // Update the Power Crystals Animation
+                powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
+            }
+        }
+        
 
         // Ground Check
         if (isOnGround(kamiData, windowDimensions[1], kamiData.positionYOffset))
@@ -217,24 +268,8 @@ int main()
         {
             velocity += jumpVelocity;
         }
-        
-        // Update Kami's Position
-        kamiData.position.y += velocity * deltaTime;
 
-        // Render & Update Power Crystal's Values
-        for (int i = 0; i < amountOfCrystals; i++)
-        {
-            // Render the Power Crystals
-            DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
-
-            // Update the Power Crystals Position
-            powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
-
-            // Update the Power Crystals Animation
-            powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
-        }
-
-                // Update Foreground Data
+        // Update Foreground Data
         for (int i = 0; i < amountOfFGTextures; i++)
         {
             // Render the Background
@@ -257,7 +292,7 @@ int main()
     {
         UnloadTexture(levelData[i].texture);
     }  
-    for (int i = 0; i < amountOfBGTextures; i++)
+    for (int i = 0; i < amountOfFGTextures; i++)
     {
         UnloadTexture(foregroundData[i].texture);
     }  
