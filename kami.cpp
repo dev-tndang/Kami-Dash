@@ -70,8 +70,6 @@ int main()
     windowDimensions[0] = 1280;
     windowDimensions[1] = 720;
 
-    bool collision = false;
-
     InitWindow(windowDimensions[0], windowDimensions[1], "Kami Dash");
     SetTargetFPS(60);
 
@@ -130,6 +128,7 @@ int main()
     // Set Character "Kami"
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     AnimationData kamiData;
+    bool collision = false;
 
     kamiData.rectangle.width = kami.width/7;
     kamiData.rectangle.height = kami.height;
@@ -168,7 +167,7 @@ int main()
     const int gravity = 1600;
     const int jumpVelocity = -800;
     int velocity = 0;
-    int inTheAir = false;
+    bool inTheAir = false;
 
     // The Main Game
     while (!WindowShouldClose())
@@ -206,7 +205,8 @@ int main()
         // Game Status depending on Player's Collision Status
         if (collision)
         {
-            // Game Over
+            // Render Game Over Sequence
+            
         }
         else
         {   
