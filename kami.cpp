@@ -1,13 +1,11 @@
 #include "raylib.h"
+#include <src/raudio.h>
+#include <src/raudio.c>
 
-struct AnimationData
+struct AudioData
 {
-    Rectangle rectangle;
-    Vector2 position;
-    int frame;
-    float updateTime;
-    float runningTime;
-    float positionYOffset;
+    Music music;
+    float timePlayed;
 };
 
 struct LevelData
@@ -19,7 +17,15 @@ struct LevelData
     float scale;
     float xLocation;
 };
-
+struct AnimationData
+{
+    Rectangle rectangle;
+    Vector2 position;
+    int frame;
+    float updateTime;
+    float runningTime;
+    float positionYOffset;
+};
 
 bool isOnGround(AnimationData data, int windowHeight, float positionOffset)
 {
@@ -30,6 +36,19 @@ float setLevelTexturesSpeed(float scrollingXLocation, float scrollingSpeed, floa
 {
     scrollingXLocation -= (scrollingSpeed * layerLocation) * deltaTime;
     return scrollingXLocation;
+}
+
+LevelData updateLevelData(LevelData data, float deltaTime)
+{
+    // Reset Background Texture Positions
+    if (data.xLocation <= -data.rectangle.width * data.scale)
+    {
+        data.xLocation = 0.0;
+    }
+
+    data.position.x = data.xLocation;
+    data.followingPosition.x = data.xLocation + data.texture.width * data.scale;
+    return data;
 }
 
 AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
@@ -50,19 +69,6 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
     return data;
 }
 
-LevelData updateLevelData(LevelData data, float deltaTime)
-{
-    // Reset Background Texture Positions
-    if (data.xLocation <= -data.rectangle.width * data.scale)
-    {
-        data.xLocation = 0.0;
-    }
-
-    data.position.x = data.xLocation;
-    data.followingPosition.x = data.xLocation + data.texture.width * data.scale;
-    return data;
-}
-
 int main()
 {
     // Window Properties
@@ -70,10 +76,34 @@ int main()
     windowDimensions[0] = 1280;
     windowDimensions[1] = 720;
 
+    // Initialize Game Window
     InitWindow(windowDimensions[0], windowDimensions[1], "Kami Dash");
     SetTargetFPS(60);
 
-    // Set Level Background
+    // Initialize Audio Device
+    InitAudioDevice();
+
+    // Game State Variables
+    bool titleScreen = true;
+
+    // Set Audio Data
+    const int amountOfMusicTracks = 4;
+    AudioData musicData[amountOfMusicTracks]{};
+
+    musicData[0].music = LoadMusicStream("music/ludum_dare_30_track_1");
+    musicData[1].music = LoadMusicStream("music/ludum_dare_30_track_8");
+    musicData[2].music = LoadMusicStream("music/ludum_dare_32_track_2");
+    musicData[3].music = LoadMusicStream("music/ludum_dare_32_track_4");
+
+    PlayMusicStream(musicData[0].music);
+    bool pause = false;
+    
+    for (int i = 0; i < amountOfMusicTracks; i++)
+    {
+        musicData[i].timePlayed = 1.0f;
+    }
+
+    // Set Level Background Data
     const int amountOfBGTextures = 10;
     float backgroundScollingSpeed = 10.0;
     LevelData backgroundData[amountOfBGTextures]{};
@@ -103,7 +133,7 @@ int main()
         backgroundData[i].xLocation = 0.0;
     }
 
-    // Set Level Foreground
+    // Set Level Foreground Data
     const int amountOfFGTextures = 2;
     float foregroundScrollingSpeed = 100.0;
     LevelData foregroundData[amountOfFGTextures]{};
@@ -125,7 +155,7 @@ int main()
         foregroundData[i].xLocation = 0.0;
     }
 
-    // Set Character "Kami"
+    // Set Character "Kami" Data
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     AnimationData kamiData;
     bool collision = false;
@@ -141,7 +171,7 @@ int main()
     kamiData.frame = 0;
     kamiData.positionYOffset = 70.0;
  
-    // Set PowerUp Crystals
+    // Set PowerUp Crystals Data
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
 
     const int amountOfCrystals = 6;
@@ -163,7 +193,7 @@ int main()
 
     int powerCrystalVelocity = -200;
 
-    // Gravity Properties (pixels/s)
+    // Set Gravity Properties (pixels/s)
     const int gravity = 1600;
     const int jumpVelocity = -800;
     int velocity = 0;
@@ -178,113 +208,132 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE);
 
-        // Detection Parameters for Power Crystals in relation to Kami
-        for (AnimationData crystal : powerCrystals)
-        {
-            float padding = 20.0;
-            Rectangle crystalRectangle
-            {
-                crystal.position.x + padding,
-                crystal.position.y + padding,
-                crystal.rectangle.width - 2 * padding,
-                crystal.rectangle.height - 2 * padding
-            };
-            Rectangle kamiRectangle
-            {
-                kamiData.position.x,
-                kamiData.position.y,
-                kamiData.rectangle.width,
-                kamiData.rectangle.height
-            };
-            if (CheckCollisionRecs(crystalRectangle, kamiRectangle))
-            {
-                collision = true;
-            }
-            
-        }
-
         // The Title Menu
-        
-
-        // Game Play depending on Player's Collision Status
-        if (collision)
+        if (titleScreen)
         {
-            // Render Game Over Sequence
-            
-        }
-        else
-        {   
-            // Update Background Data
-            for (int i = 0; i < amountOfBGTextures; i++)
+            if (IsKeyPressed(KEY_ENTER))
             {
-                // Render the Background
-                DrawTextureEx(backgroundData[i].texture, backgroundData[i].position, 0.0, backgroundData[i].scale, WHITE);
-                DrawTextureEx(backgroundData[i].texture, backgroundData[i].followingPosition, 0.0, backgroundData[i].scale, WHITE);
-
-                // Update the Background Texture Speed
-                backgroundData[i].xLocation = setLevelTexturesSpeed(backgroundData[i].xLocation, backgroundScollingSpeed, deltaTime, i);
-
-                // Update Background Positions
-                backgroundData[i] = updateLevelData(backgroundData[i], deltaTime);
+                titleScreen = false;
             }
-
-            // Render Kami
-            DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
-            
-            // Update Kami's Position
-            kamiData.position.y += velocity * deltaTime;
-
-            // Render & Update Power Crystal's Values
-            for (int i = 0; i < amountOfCrystals; i++)
-            {
-                // Render the Power Crystals
-                DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
-
-                // Update the Power Crystals Position
-                powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
-
-                // Update the Power Crystals Animation
-                powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
-            }
-
-            // Render & Update Foreground Data
-            for (int i = 0; i < amountOfFGTextures; i++)
-            {
-                // Render the Foreground
-                DrawTextureEx(foregroundData[i].texture, foregroundData[i].position, 0.0, foregroundData[i].scale, WHITE);
-                DrawTextureEx(foregroundData[i].texture, foregroundData[i].followingPosition, 0.0, foregroundData[i].scale, WHITE);
-
-                // Update the Foreground Texture Speed
-                foregroundData[i].xLocation = setLevelTexturesSpeed(foregroundData[i].xLocation, foregroundScrollingSpeed, deltaTime, i);
-
-                // Update Foreground Positions
-                foregroundData[i] = updateLevelData(foregroundData[i], deltaTime);
-            }
-        }
-        
-
-        // Ground Check
-        if (isOnGround(kamiData, windowDimensions[1], kamiData.positionYOffset))
-        {
-            // Player is on the Ground
-            velocity = 0;
-            kamiData.position.y = windowDimensions[1] - (kamiData.rectangle.height + kamiData.positionYOffset);
-            inTheAir = false;
-
-            // Update Kami's Animation Frame
-            kamiData = updateAnimationData(kamiData, deltaTime, 6);
         }
         else
         {
-            // Player is in the Air, apply Gravity
-            velocity += gravity * deltaTime;
-            inTheAir = true;
-        }
+            // In-Game Music Properties
+            UpdateMusicStream(musicData[3].music);
 
-        // Player Jumps at Velocity
-        if(IsKeyPressed(KEY_SPACE) && !inTheAir)
-        {
-            velocity += jumpVelocity;
+            // Pause/Resume music playing
+            if (IsKeyPressed(KEY_P))
+            {
+                pause = !pause;
+
+                if (pause) PauseMusicStream(music);
+                else ResumeMusicStream(music);
+            }
+
+            // Detection Parameters for Power Crystals in relation to Kami
+            for (AnimationData crystal : powerCrystals)
+            {
+                float padding = 20.0;
+                Rectangle crystalRectangle
+                {
+                    crystal.position.x + padding,
+                    crystal.position.y + padding,
+                    crystal.rectangle.width - 2 * padding,
+                    crystal.rectangle.height - 2 * padding
+                };
+                Rectangle kamiRectangle
+                {
+                    kamiData.position.x,
+                    kamiData.position.y,
+                    kamiData.rectangle.width,
+                    kamiData.rectangle.height
+                };
+                if (CheckCollisionRecs(crystalRectangle, kamiRectangle))
+                {
+                    collision = true;
+                }
+                
+            }
+
+            // Game State depending on Player's Collision Status
+            if (collision)
+            {
+                // Render Game Over Sequence
+                
+            }
+            else
+            {   
+                // Update Background Data
+                for (int i = 0; i < amountOfBGTextures; i++)
+                {
+                    // Render the Background
+                    DrawTextureEx(backgroundData[i].texture, backgroundData[i].position, 0.0, backgroundData[i].scale, WHITE);
+                    DrawTextureEx(backgroundData[i].texture, backgroundData[i].followingPosition, 0.0, backgroundData[i].scale, WHITE);
+
+                    // Update the Background Texture Speed
+                    backgroundData[i].xLocation = setLevelTexturesSpeed(backgroundData[i].xLocation, backgroundScollingSpeed, deltaTime, i);
+
+                    // Update Background Positions
+                    backgroundData[i] = updateLevelData(backgroundData[i], deltaTime);
+                }
+
+                // Render Kami
+                DrawTextureRec(kami, kamiData.rectangle, kamiData.position, WHITE);
+                
+                // Update Kami's Position
+                kamiData.position.y += velocity * deltaTime;
+
+                // Render & Update Power Crystal's Values
+                for (int i = 0; i < amountOfCrystals; i++)
+                {
+                    // Render the Power Crystals
+                    DrawTextureRec(powerCrystal, powerCrystals[i].rectangle, powerCrystals[i].position, WHITE);
+
+                    // Update the Power Crystals Position
+                    powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
+
+                    // Update the Power Crystals Animation
+                    powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
+                }
+
+                // Render & Update Foreground Data
+                for (int i = 0; i < amountOfFGTextures; i++)
+                {
+                    // Render the Foreground
+                    DrawTextureEx(foregroundData[i].texture, foregroundData[i].position, 0.0, foregroundData[i].scale, WHITE);
+                    DrawTextureEx(foregroundData[i].texture, foregroundData[i].followingPosition, 0.0, foregroundData[i].scale, WHITE);
+
+                    // Update the Foreground Texture Speed
+                    foregroundData[i].xLocation = setLevelTexturesSpeed(foregroundData[i].xLocation, foregroundScrollingSpeed, deltaTime, i);
+
+                    // Update Foreground Positions
+                    foregroundData[i] = updateLevelData(foregroundData[i], deltaTime);
+                }
+
+                // Ground Check
+                if (isOnGround(kamiData, windowDimensions[1], kamiData.positionYOffset))
+                {
+                    // Player is on the Ground
+                    velocity = 0;
+                    kamiData.position.y = windowDimensions[1] - (kamiData.rectangle.height + kamiData.positionYOffset);
+                    inTheAir = false;
+
+                    // Update Kami's Animation Frame
+                    kamiData = updateAnimationData(kamiData, deltaTime, 6);
+                }
+                else
+                {
+                    // Player is in the Air, apply Gravity
+                    velocity += gravity * deltaTime;
+                    inTheAir = true;
+                }
+
+                // Player Jumps at Velocity
+                if(IsKeyPressed(KEY_SPACE) && !inTheAir)
+                {
+                    velocity += jumpVelocity;
+                }
+            }
         }
 
         EndDrawing();
@@ -300,5 +349,10 @@ int main()
     {
         UnloadTexture(foregroundData[i].texture);
     }  
+    for (int i = 0; i < amountOfMusicTracks; i++)
+    {
+        UnloadMusicStream(musicData[i].music);
+    }
+    CloseAudioDevice();
     CloseWindow();
 }
