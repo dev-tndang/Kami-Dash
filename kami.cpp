@@ -178,6 +178,7 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE);
 
+        // Detection Parameters for Power Crystals in relation to Kami
         for (AnimationData crystal : powerCrystals)
         {
             float padding = 20.0;
@@ -202,7 +203,10 @@ int main()
             
         }
 
-        // Game Status depending on Player's Collision Status
+        // The Title Menu
+        
+
+        // Game Play depending on Player's Collision Status
         if (collision)
         {
             // Render Game Over Sequence
