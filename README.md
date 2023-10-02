@@ -7,6 +7,7 @@
  - Assets: Sourced from Itch.io (refer to assets text documentation for attributions) <br/>
  <br/>
  Currently requires a C/C++ supported IDE with RayLib installed to run the game. <br/>
- Learn more about RayLib and download @ https://www.raylib.com/
+ Learn more about RayLib and download @ https://www.raylib.com/ <br/>
+ <br/>
 
 ![alt text](https://github.com/dev-tndang/dev-tndang-kamidash/blob/main/screenshots/Screenshot20231002_01.png?raw=true)
