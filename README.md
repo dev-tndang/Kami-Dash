@@ -8,3 +8,5 @@
  <br/>
  Currently requires a C/C++ supported IDE with RayLib installed to run the game. <br/>
  Learn more about RayLib and download @ https://www.raylib.com/
+
+![alt text](https://github.com/dev-tndang/dev-tndang-kamidash/blob/main/screenshots/Screenshot20231002_01.png?raw=true)
