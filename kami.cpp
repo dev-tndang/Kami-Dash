@@ -26,7 +26,7 @@ bool isOnGround(AnimationData data, int windowHeight, float positionOffset)
     return data.position.y >= windowHeight - (data.rectangle.height + positionOffset);
 }
 
-float setLevelTexturesSpeed(float scrollingXLocation, float scrollingSpeed, float deltaTime, int layerLocation)
+float setLevelTextureSpeed(float scrollingXLocation, float scrollingSpeed, float deltaTime, int layerLocation)
 {
     scrollingXLocation -= (scrollingSpeed * layerLocation) * deltaTime;
     return scrollingXLocation;
@@ -143,6 +143,7 @@ int main()
     // Set Character "Kami" Data
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     AnimationData kamiData;
+    int powerUpsCollected = 0;
     bool enemyCollision = false;
     bool powerUpCollision = false;
 
@@ -193,7 +194,7 @@ int main()
         blightEnemies[i].rectangle.x = 0.0;
         blightEnemies[i].rectangle.y = blightEnemy.height/7;
         blightEnemies[i].positionYOffset = 75.0;
-        blightEnemies[i].position.x = windowDimensions[0] + (i * 500);
+        blightEnemies[i].position.x = windowDimensions[0] + (i * 1000);
         blightEnemies[i].position.y = windowDimensions[1] - (blightEnemy.height/7 + blightEnemies[i].positionYOffset);
         blightEnemies[i].updateTime = 1.0/7.0;
         blightEnemies[i].runningTime = 0.0;
@@ -245,7 +246,7 @@ int main()
         // Detection Parameters for Blight Enemies in relation to Kami
         for (AnimationData blight : blightEnemies)
         {
-            float padding = 100.0;
+            float padding = 60.0;
             Rectangle blightRectangle
             {
                 blight.position.x + padding,
@@ -276,7 +277,7 @@ int main()
             DrawTextureEx(backgroundData[i].texture, backgroundData[i].followingPosition, 0.0, backgroundData[i].scale, WHITE);
 
             // Update the Background Texture Speed
-            backgroundData[i].xLocation = setLevelTexturesSpeed(backgroundData[i].xLocation, backgroundScollingSpeed, deltaTime, i);
+            backgroundData[i].xLocation = setLevelTextureSpeed(backgroundData[i].xLocation, backgroundScollingSpeed, deltaTime, i);
 
             // Update Background Positions
             backgroundData[i] = updateLevelData(backgroundData[i], deltaTime);
@@ -286,7 +287,7 @@ int main()
         if (enemyCollision)
         {
             // Render Game Over Sequence
-            
+            DrawText("Game Over!", windowDimensions[0]/4 + 120, windowDimensions[1]/2, 70, WHITE);
         }
         else
         {   
@@ -355,7 +356,7 @@ int main()
             DrawTextureEx(foregroundData[i].texture, foregroundData[i].followingPosition, 0.0, foregroundData[i].scale, WHITE);
 
             // Update the Foreground Texture Speed
-            foregroundData[i].xLocation = setLevelTexturesSpeed(foregroundData[i].xLocation, foregroundScrollingSpeed, deltaTime, i);
+            foregroundData[i].xLocation = setLevelTextureSpeed(foregroundData[i].xLocation, foregroundScrollingSpeed, deltaTime, i);
 
             // Update Foreground Positions
             foregroundData[i] = updateLevelData(foregroundData[i], deltaTime);
