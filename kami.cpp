@@ -11,6 +11,7 @@ struct LevelData
 };
 struct AnimationData
 {
+    bool invertedState;
     Rectangle rectangle;
     Vector2 position;
     int frame;
@@ -44,20 +45,33 @@ LevelData updateLevelData(LevelData data, float deltaTime)
     return data;
 }
 
-AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
+AnimationData updateAnimationData(AnimationData data, float deltaTime, int endFrame, bool spriteInverted)
 {
     // Update Running Time
     data.runningTime += deltaTime;
     if (data.runningTime >= data.updateTime)
     {
         // Update Animation Frame
-        data.rectangle.x = data.frame * data.rectangle.width;
-        data.frame++;
-        if (data.frame > maxFrame)
+        if (spriteInverted)
         {
-            data.frame = 0;
+            data.rectangle.x = data.frame * data.rectangle.width;
+            data.frame++;
+            if (data.frame > 0)
+            {
+                data.frame = -endFrame;
+            }
+            data.runningTime = 0;
         }
-        data.runningTime = 0;
+        else
+        {
+            data.rectangle.x = data.frame * data.rectangle.width;
+            data.frame++;
+            if (data.frame > endFrame)
+            {
+                data.frame = 0;
+            }
+            data.runningTime = 0;
+        }
     }
     return data;
 }
@@ -129,18 +143,19 @@ int main()
     // Set Character "Kami" Data
     Texture2D kami = LoadTexture("textures/running_knight_girl.png");
     AnimationData kamiData;
-    bool collision = false;
+    bool enemyCollision = false;
+    bool powerUpCollision = false;
 
     kamiData.rectangle.width = kami.width/7;
     kamiData.rectangle.height = kami.height;
     kamiData.rectangle.x = 0.0;
     kamiData.rectangle.y = 0.0;
+    kamiData.positionYOffset = 70.0;
     kamiData.position.x = windowDimensions[0]/2 - kami.width/1.5;
     kamiData.position.y = windowDimensions[1] + kami.height;
     kamiData.updateTime = 1.0/12.0;
     kamiData.runningTime = 0;
     kamiData.frame = 0;
-    kamiData.positionYOffset = 70.0;
  
     // Set PowerUp Crystals Data
     Texture2D powerCrystal = LoadTexture("textures/power_ups/crystals/blue/blue_crystal_sprites_sheet.png");
@@ -150,19 +165,42 @@ int main()
 
     for (int i = 0; i < amountOfCrystals; i++)
     {
-        powerCrystals[i].rectangle.x = 0.0;
-        powerCrystals[i].rectangle.y = 0.0;
         powerCrystals[i].rectangle.width = powerCrystal.width/4;
         powerCrystals[i].rectangle.height = powerCrystal.height;
+        powerCrystals[i].rectangle.x = 0.0;
+        powerCrystals[i].rectangle.y = 0.0;
         powerCrystals[i].positionYOffset = 75.0;
         powerCrystals[i].position.x = windowDimensions[0] + (i * 300);
         powerCrystals[i].position.y = windowDimensions[1] - (powerCrystal.height + powerCrystals[i].positionYOffset);
-        powerCrystals[i].frame = 0;
-        powerCrystals[i].runningTime = 0.0;
         powerCrystals[i].updateTime = 1.0/4.0;
+        powerCrystals[i].runningTime = 0.0;
+        powerCrystals[i].frame = 0;
     }
 
     int powerCrystalVelocity = -200;
+
+    // Set Blight Enemy Data
+    Texture2D blightEnemy = LoadTexture("textures/necromancer_character_sheet.png");
+
+    const int amountOfEnemies = 6;
+    AnimationData blightEnemies[amountOfEnemies]{};
+
+    for (int i = 0; i < amountOfEnemies; i++)
+    {
+        blightEnemies[i].invertedState = true;
+        blightEnemies[i].rectangle.width = -blightEnemy.width/17; 
+        blightEnemies[i].rectangle.height = blightEnemy.height/7;
+        blightEnemies[i].rectangle.x = 0.0;
+        blightEnemies[i].rectangle.y = blightEnemy.height/7;
+        blightEnemies[i].positionYOffset = 75.0;
+        blightEnemies[i].position.x = windowDimensions[0] + (i * 500);
+        blightEnemies[i].position.y = windowDimensions[1] - (blightEnemy.height/7 + blightEnemies[i].positionYOffset);
+        blightEnemies[i].updateTime = 1.0/7.0;
+        blightEnemies[i].runningTime = 0.0;
+        blightEnemies[i].frame = -7;
+    }
+
+    int blightEnemyVelocity = -200;
 
     // Set Gravity Properties (pixels/s)
     const int gravity = 1600;
@@ -199,7 +237,33 @@ int main()
             };
             if (CheckCollisionRecs(crystalRectangle, kamiRectangle))
             {
-                collision = true;
+                powerUpCollision = true;
+            }
+            
+        }
+
+        // Detection Parameters for Blight Enemies in relation to Kami
+        for (AnimationData blight : blightEnemies)
+        {
+            float padding = 100.0;
+            Rectangle blightRectangle
+            {
+                blight.position.x + padding,
+                blight.position.y + padding,
+                -blight.rectangle.width + padding,
+                blight.rectangle.height - padding
+            };
+            Rectangle kamiRectangle
+            {
+                kamiData.position.x,
+                kamiData.position.y,
+                kamiData.rectangle.width,
+                kamiData.rectangle.height
+            };
+
+            if (CheckCollisionRecs(blightRectangle, kamiRectangle))
+            {
+                enemyCollision = true;
             }
             
         }
@@ -219,7 +283,7 @@ int main()
         }
 
         // Game State depending on Player's Collision Status
-        if (collision)
+        if (enemyCollision)
         {
             // Render Game Over Sequence
             
@@ -233,7 +297,7 @@ int main()
             // Update Kami's Position
             kamiData.position.y += velocity * deltaTime;
 
-            // Render & Update Power Crystal's Values
+            // Render & Update Power Crystal Values
             for (int i = 0; i < amountOfCrystals; i++)
             {
                 // Render the Power Crystals
@@ -242,8 +306,21 @@ int main()
                 // Update the Power Crystals Position
                 powerCrystals[i].position.x += powerCrystalVelocity * deltaTime;
 
-                // Update the Power Crystals Animation
-                powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3);
+                // Update the Power Crystals Animation Data
+                powerCrystals[i] = updateAnimationData(powerCrystals[i], deltaTime, 3, powerCrystals[i].invertedState);
+            }
+
+            // Render & Update Blight Enemy Values
+            for (int i = 0; i < amountOfEnemies; i++)
+            {
+                // Render the Blight Enemies
+                DrawTextureRec(blightEnemy, blightEnemies[i].rectangle, blightEnemies[i].position, WHITE);
+
+                // Update the Blight Enemies Position
+                blightEnemies[i].position.x += blightEnemyVelocity * deltaTime;
+
+                // Update the Blight Enemies Animation Data
+                blightEnemies[i] = updateAnimationData(blightEnemies[i], deltaTime, 7, blightEnemies[i].invertedState);
             }
 
             // Ground Check
@@ -255,7 +332,7 @@ int main()
                 inTheAir = false;
 
                 // Update Kami's Animation Frame
-                kamiData = updateAnimationData(kamiData, deltaTime, 6);
+                kamiData = updateAnimationData(kamiData, deltaTime, 6, kamiData.invertedState);
             }
             else
             {
@@ -288,6 +365,7 @@ int main()
 
     UnloadTexture(kami);
     UnloadTexture(powerCrystal);
+    UnloadTexture(blightEnemy);
     for (int i = 0; i < amountOfBGTextures; i++)
     {
         UnloadTexture(backgroundData[i].texture);
