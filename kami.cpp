@@ -287,7 +287,24 @@ int main()
         if (enemyCollision)
         {
             // Render Game Over Sequence
-            DrawText("Game Over!", windowDimensions[0]/4 + 120, windowDimensions[1]/2, 70, WHITE);
+            DrawText("Game Over!", windowDimensions[0]/4 + 125, windowDimensions[1]/2 - 60, 70, WHITE);
+            DrawText("Play Again?", windowDimensions[0]/4 + 220, windowDimensions[1]/2 + 60, 36, WHITE);
+            DrawText("Press: Yes[Y] / No[ESC]", windowDimensions[0]/4 + 170, windowDimensions[1]/2 + 120, 24, WHITE);
+
+            // Restart the core gameplay for replay
+            if (IsKeyPressed(KEY_Y))
+            {
+                enemyCollision = false;
+                kamiData.position.x = windowDimensions[0]/2 - kami.width/1.5;
+                for (int i = 0; i < amountOfCrystals; i++)
+                {
+                    powerCrystals[i].position.x = windowDimensions[0] + (i * 300);
+                }
+                for (int i = 0; i < amountOfEnemies; i++)
+                {
+                    blightEnemies[i].position.x = windowDimensions[0] + (i * 1000);
+                }
+            }
         }
         else
         {   
